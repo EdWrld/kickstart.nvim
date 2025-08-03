@@ -175,6 +175,7 @@ vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
+vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Open diagnostic [E]rror' })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
@@ -199,6 +200,18 @@ vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right win
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
+-- Create a new tab with Alt + t
+vim.keymap.set('n', '<M-t>', ':tabnew<CR>', { desc = 'New tab', silent = true })
+
+-- Go to previous tab with Alt + h
+vim.keymap.set('n', '<M-h>', ':tabprevious<CR>', { desc = 'Previous tab', silent = true })
+
+-- Go to next tab with Alt + l
+vim.keymap.set('n', '<M-l>', ':tabnext<CR>', { desc = 'Next tab', silent = true })
+
+-- Close current tab
+vim.keymap.set('n', '<M-w>', ':tabclose<CR>', { desc = 'Close tab', silent = true })
+
 -- NOTE: Some terminals have colliding keymaps or are not able to send distinct keycodes
 -- vim.keymap.set("n", "<C-S-h>", "<C-w>H", { desc = "Move window to the left" })
 -- vim.keymap.set("n", "<C-S-l>", "<C-w>L", { desc = "Move window to the right" })
@@ -218,6 +231,22 @@ vim.api.nvim_create_autocmd('TextYankPost', {
     vim.hl.on_yank()
   end,
 })
+
+vim.api.nvim_create_autocmd('TermOpen', {
+  desc = 'Open Neovim Terminal',
+  group = vim.api.nvim_create_augroup('custom-term-open', { clear = true }),
+  callback = function()
+    vim.opt.number = false
+    vim.opt.relativenumber = false
+  end,
+})
+
+vim.keymap.set('n', '<space>st', function()
+  vim.cmd.vnew()
+  vim.cmd.term()
+  vim.cmd.wincmd 'J'
+  vim.api.nvim_win_set_height(0, 15)
+end, { desc = '[T]erm' })
 
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
@@ -459,6 +488,46 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sn', function()
         builtin.find_files { cwd = vim.fn.stdpath 'config' }
       end, { desc = '[S]earch [N]eovim files' })
+
+      local pickers = require 'telescope.pickers'
+      local finders = require 'telescope.finders'
+      local conf = require('telescope.config').values
+
+      local function get_npm_scripts()
+        local scripts = vim.fn.json_decode(vim.fn.readfile 'package.json')['scripts']
+        local items = {}
+        for k, _ in pairs(scripts or {}) do
+          table.insert(items, k)
+        end
+        return items
+      end
+
+      local function run_npm_script(script)
+        vim.cmd('belowright split | terminal pnpm run ' .. script)
+      end
+
+      vim.api.nvim_create_user_command('NpmScripts', function()
+        local scripts = get_npm_scripts()
+        pickers
+          .new({}, {
+            prompt_title = 'npm scripts',
+            finder = finders.new_table { results = scripts },
+            sorter = conf.generic_sorter {},
+            attach_mappings = function(_, map)
+              map('i', '<CR>', function(prompt_bufnr)
+                local selection = require('telescope.actions.state').get_selected_entry()
+                require('telescope.actions').close(prompt_bufnr)
+                run_npm_script(selection[1])
+              end)
+              return true
+            end,
+          })
+          :find()
+      end, {})
+
+      vim.keymap.set('n', '<leader>ns', function()
+        builtin.find_files { cwd = vim.fn.stdpath 'config' }
+      end, { desc = '[N]pm [S]cripts' })
     end,
   },
 
@@ -681,9 +750,8 @@ require('lazy').setup({
         --    https://github.com/pmizio/typescript-tools.nvim
         --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
-        -- ts_ls = {},
-        --
-
+        postgres_lsp = {},
+        ts_ls = {},
         lua_ls = {
           -- cmd = { ... },
           -- filetypes = { ... },
@@ -772,7 +840,9 @@ require('lazy').setup({
         -- python = { "isort", "black" },
         --
         -- You can use 'stop_after_first' to run the first available formatter from the list
-        -- javascript = { "prettierd", "prettier", stop_after_first = true },
+        javascript = { 'prettierd', 'prettier', stop_after_first = true },
+        typescript = { 'prettierd', 'prettier', stop_after_first = true },
+        typescriptreact = { 'prettierd', 'prettier', stop_after_first = true },
       },
     },
   },
@@ -974,17 +1044,17 @@ require('lazy').setup({
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
   -- require 'kickstart.plugins.debug',
-  -- require 'kickstart.plugins.indent_line',
+  require 'kickstart.plugins.indent_line',
   -- require 'kickstart.plugins.lint',
-  -- require 'kickstart.plugins.autopairs',
-  -- require 'kickstart.plugins.neo-tree',
-  -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
+  require 'kickstart.plugins.autopairs',
+  require 'kickstart.plugins.neo-tree',
+  require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
   --
   --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
-  -- { import = 'custom.plugins' },
+  { import = 'custom.plugins' },
   --
   -- For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
   -- Or use telescope!
