@@ -19,4 +19,5 @@ return {
     end,
   },
   vim.keymap.set('n', '<leader>gp', ':GHSearchPRs <CR> is:open <CR>', { desc = 'GitHub Open PR list' }),
+  vim.keymap.set('n', '<leader>git', ':Neogit<CR>', { desc = 'Open Neogit' }),
 }
