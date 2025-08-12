@@ -695,6 +695,33 @@ require('lazy').setup({
         end,
       })
 
+      -- Auto-load the last session if you start nvim with no files (and not inside git commit etc.)
+      vim.api.nvim_create_autocmd('VimEnter', {
+        callback = function()
+          -- skip when opening special buffers or passing files/STDIN
+          if vim.fn.argc() == 0 and not vim.env.GIT_EDITOR then
+            pcall(function()
+              require('persistence').load()
+            end)
+          end
+        end,
+      })
+
+      -- Make sessions capture tabs, buffers, cwd, window sizes, folds, etc.
+      vim.opt.sessionoptions = {
+        'buffers', -- keep unloaded buffers so tabs can reopen them
+        'curdir', -- restore working directory
+        'tabpages', -- <-- this is the key for tabs
+        'winsize',
+        'help',
+        'globals', -- optional: restore some globals (maps from plugins may rely on this)
+        'skiprtp',
+        'folds',
+      }
+
+      -- Strongly recommended so buffers can survive when their window closes
+      vim.opt.hidden = true
+
       -- Diagnostic Config
       -- See :help vim.diagnostic.Opts
       vim.diagnostic.config {
@@ -1043,12 +1070,12 @@ require('lazy').setup({
   --  Here are some example plugins that I've included in the Kickstart repository.
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
-  -- require 'kickstart.plugins.debug',
+  require 'kickstart.plugins.debug',
   require 'kickstart.plugins.indent_line',
-  -- require 'kickstart.plugins.lint',
+  require 'kickstart.plugins.lint',
   require 'kickstart.plugins.autopairs',
-  -- require 'kickstart.plugins.neo-tree',
-  -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
+  require 'kickstart.plugins.neo-tree',
+  require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
