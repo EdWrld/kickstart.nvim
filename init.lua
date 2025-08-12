@@ -780,6 +780,7 @@ require('lazy').setup({
         --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
         postgres_lsp = {},
+
         -- ESLint language server to surface ESLint diagnostics in JS/TS files
         eslint = {
           settings = {
