@@ -466,6 +466,8 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
       vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
 
+      vim.keymap.set('n', '<leader>cd', ':cd %:p:h<CR>:pwd<CR>', { silent = true })
+
       -- Slightly advanced example of overriding default behavior and theme
       vim.keymap.set('n', '<leader>/', function()
         -- You can pass additional configuration to Telescope to change the theme, layout, etc.
@@ -778,6 +780,13 @@ require('lazy').setup({
         --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
         postgres_lsp = {},
+        -- ESLint language server to surface ESLint diagnostics in JS/TS files
+        eslint = {
+          settings = {
+            -- Let the server detect the working directory automatically
+            workingDirectory = { mode = 'auto' },
+          },
+        },
         ts_ls = {},
         lua_ls = {
           -- cmd = { ... },
