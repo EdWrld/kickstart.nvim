@@ -1,14 +1,40 @@
 return {
   {
-    'CopilotC-Nvim/CopilotChat.nvim',
-    dependencies = {
-      { 'github/copilot.vim' }, -- or zbirenbaum/copilot.lua
-      { 'nvim-lua/plenary.nvim', branch = 'master' }, -- for curl, log and async functions
+    {
+      'zbirenbaum/copilot.lua',
+      event = 'InsertEnter',
+      cmd = 'Copilot',
+      opts = {
+        panel = { enabled = true }, -- no side panel; keep it simple
+        suggestion = {
+          enabled = true, -- inline ghost text
+          auto_trigger = false, -- show suggestions as you type
+          hiding_during_composition = true, -- must have this on
+          trigger_on_accept = true,
+          debounce = 75,
+          keymap = {
+            accept = '<C-\\>', -- accept entire suggestion
+            accept_line = false, -- set your own if you want
+            accept_word = false, -- set your own if you want
+            next = '<M-]>', -- cycle next suggestion
+            prev = '<M-[>', -- cycle previous suggestion
+            dismiss = '<C-n>', -- hide the ghost text
+          },
+        },
+        filetypes = {
+          markdown = true,
+          help = false,
+          gitcommit = true,
+          lua = true,
+          typescript = true,
+          sql = true,
+          -- add any filetypes you want to enable/disable
+        },
+      },
+      config = function(_, opts)
+        require('copilot').setup(opts)
+        vim.api.nvim_set_hl(0, 'CopilotSuggestion', { fg = '#50fa7b', italic = true })
+      end,
     },
-    build = 'make tiktoken', -- Only on MacOS or Linux
-    opts = {
-      -- See Configuration section for options
-    },
-    -- See Commands section for default commands if you want to lazy load on them
   },
 }

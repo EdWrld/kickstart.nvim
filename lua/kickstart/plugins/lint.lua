@@ -1,12 +1,15 @@
 return {
 
   { -- Linting
-    'mfussenegger/nvim-lint',
+   'mfussenegger/nvim-lint',
     event = { 'BufReadPre', 'BufNewFile' },
     config = function()
       local lint = require 'lint'
       lint.linters_by_ft = {
         markdown = { 'markdownlint' },
+				eslint = { 'eslint_d' },
+        dockerfile = { "hadolint" },
+				json = { "jsonlint" },
       }
 
       -- To allow other plugins to add linters to require('lint').linters_by_ft,
@@ -18,7 +21,7 @@ return {
       -- which will cause errors unless these tools are available:
       -- {
       --   clojure = { "clj-kondo" },
-      --   dockerfile = { "hadolint" },
+      -- dockerfile = { "hadolint" },
       --   inko = { "inko" },
       --   janet = { "janet" },
       --   json = { "jsonlint" },
@@ -30,16 +33,16 @@ return {
       -- }
       --
       -- You can disable the default linters by setting their filetypes to nil:
-      -- lint.linters_by_ft['clojure'] = nil
+       lint.linters_by_ft['clojure'] = nil
       -- lint.linters_by_ft['dockerfile'] = nil
-      -- lint.linters_by_ft['inko'] = nil
-      -- lint.linters_by_ft['janet'] = nil
+       lint.linters_by_ft['inko'] = nil
+       lint.linters_by_ft['janet'] = nil
       -- lint.linters_by_ft['json'] = nil
       -- lint.linters_by_ft['markdown'] = nil
-      -- lint.linters_by_ft['rst'] = nil
-      -- lint.linters_by_ft['ruby'] = nil
-      -- lint.linters_by_ft['terraform'] = nil
-      -- lint.linters_by_ft['text'] = nil
+       lint.linters_by_ft['rst'] = nil
+       lint.linters_by_ft['ruby'] = nil
+       lint.linters_by_ft['terraform'] = nil
+       lint.linters_by_ft['text'] = nil
 
       -- Create autocommand which carries out the actual linting
       -- on the specified events.
